@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>FORGE — Your Attention. Forged Into Value.</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323:wght@400&display=swap');
+:root {
+  --orange: #FF6B2B; --ember: #FF3D00; --gold: #FFD700;
+  --black: #0D0D0D; --dark: #1A1A1A; --darker: #111111;
+  --white: #F5F0EB; --ash: #888888;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--black); color: var(--white);
+  font-family: 'Press Start 2P', monospace;
+  min-height: 100vh; overflow-x: hidden;
+}
+body::before {
+  content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 9999;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.07) 2px, rgba(0,0,0,0.07) 4px);
+}
+
+/* SCREENS */
+.screen { display: none; min-height: 100vh; flex-direction: column; align-items: center; padding: 20px 16px 40px; }
+.screen.active { display: flex; }
+
+/* PHONE FRAME */
+@media (min-width: 600px) {
+  body { display: flex; align-items: center; justify-content: center; background: #050505; }
+  .phone-frame { width: 390px; background: var(--black); border: 6px solid #222; box-shadow: 0 0 60px rgba(255,107,43,0.2), 0 40px 80px rgba(0,0,0,0.8); overflow: hidden; }
+  .screen { min-height: 844px; }
+}
+@media (max-width: 599px) { .phone-frame { width: 100%; } }
+
+/* BUTTONS */
+.btn {
+  font-family: 'Press Start 2P', monospace; font-size: 11px;
+  padding: 14px 24px; background: var(--orange); color: var(--black);
+  border: none; cursor: pointer; width: 100%; max-width: 320px; margin-top: 8px;
+  border-bottom: 4px solid #8B2500; border-right: 4px solid #8B2500;
+  border-top: 4px solid #FF9A6C; border-left: 4px solid #FF9A6C;
+  letter-spacing: 1px; text-transform: uppercase;
+}
+.btn:active { transform: translate(2px,2px); border-width: 2px; }
+.btn.dim { background: var(--dark); color: var(--ash); border-color: #333; border-bottom-color: #111; border-right-color: #111; }
+.btn.sm { font-size: 9px; padding: 10px; max-width: 100%; }
+.btn.half { flex: 1; }
+
+/* PIXEL BOX */
+.pbox { border: 4px solid var(--orange); box-shadow: 4px 4px 0 #8B2500; }
+.pbox-dim { border: 2px solid #333; box-shadow: 2px 2px 0 #111; }
+
+/* FIRE */
+.fire { display: flex; gap: 2px; align-items: flex-end; justify-content: center; }
+.fp { width: 6px; background: var(--orange); animation: flicker 0.4s steps(2) infinite; }
+@keyframes flicker { 0%,100%{opacity:1;transform:scaleY(1)} 50%{opacity:0.5;transform:scaleY(0.6)} }
+
+/* LOGO */
+.logo { font-size: clamp(36px,10vw,72px); color: var(--orange); text-align: center; letter-spacing: 4px;
+  text-shadow: 4px 4px 0 #8B2500, 0 0 40px rgba(255,107,43,0.7), 0 0 80px rgba(255,107,43,0.3);
+  animation: pulse 2s ease-in-out infinite; }
+@keyframes pulse { 0%,100%{text-shadow:4px 4px 0 #8B2500,0 0 30px rgba(255,107,43,0.5),0 0 60px rgba(255,107,43,0.2)} 50%{text-shadow:4px 4px 0 #8B2500,0 0 55px rgba(255,107,43,0.85),0 0 100px rgba(255,107,43,0.35)} }
+
+/* ANVIL */
+.anvil-svg { width: 120px; height: 80px; filter: drop-shadow(0 0 12px rgba(255,107,43,0.8)); animation: bob 2s steps(2) infinite; }
+@keyframes bob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-4px)} }
+
+/* TEMP BAR */
+.bar-bg { width:100%; height:20px; background:#0D0D0D; border:2px solid #333; }
+.bar-fill { height:100%; background:linear-gradient(90deg,#FF3D00,var(--orange),var(--gold)); transition:width 0.5s steps(10); position:relative; }
+.bar-fill::after { content:''; position:absolute; right:0; top:0; width:4px; height:100%; background:white; animation:blink 0.5s steps(2) infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+/* STATS GRID */
+.stats { display:grid; grid-template-columns:1fr 1fr; gap:8px; width:100%; max-width:380px; }
+.stat { background:var(--darker); border:2px solid #333; box-shadow:2px 2px 0 #111; padding:12px 10px; text-align:center; }
+.stat-v { font-size:16px; color:var(--orange); display:block; text-shadow:1px 1px 0 #8B2500; }
+.stat-l { font-size:7px; color:var(--ash); margin-top:4px; display:block; }
+
+/* TASK OPTIONS */
+.options { display:grid; grid-template-columns:1fr 1fr; gap:8px; width:100%; margin-top:8px; }
+.opt {
+  font-family:'Press Start 2P',monospace; font-size:9px; padding:12px 8px;
+  background:#111; color:var(--ash); border:2px solid #333; box-shadow:2px 2px 0 #0D0D0D;
+  cursor:pointer; text-align:center; letter-spacing:0.5px; width:100%;
+}
+.opt:hover { background:var(--dark); color:var(--orange); border-color:var(--orange); }
+.opt.chosen { background:var(--dark); color:var(--orange); border-color:var(--orange); box-shadow:2px 2px 0 #8B2500; }
+
+/* PIXEL IMAGE */
+.pix-img { width:100%; height:140px; background:#111; border:2px solid #333; display:grid; grid-template-columns:repeat(16,1fr); grid-template-rows:repeat(10,1fr); overflow:hidden; }
+
+/* COINS */
+.coins { display:grid; grid-template-columns:repeat(5,20px); gap:4px; justify-content:center; }
+.coin { width:20px; height:20px; background:var(--gold); border:2px solid #8B6914; box-shadow:1px 1px 0 #5C4A0D; animation:pop 0.3s steps(3) forwards; opacity:0; transform:scale(0); }
+@keyframes pop { 0%{opacity:0;transform:scale(0) translateY(10px)} 60%{opacity:1;transform:scale(1.2) translateY(-4px)} 100%{opacity:1;transform:scale(1) translateY(0)} }
+
+/* STREAK BADGE */
+.streak-badge { border:4px solid var(--gold); box-shadow:4px 4px 0 #8B6914; padding:16px 24px; text-align:center; background:var(--dark); width:100%; max-width:320px; }
+
+/* TOAST */
+.toast { position:fixed; top:16px; left:50%; transform:translateX(-50%) translateY(-80px); background:var(--dark); border:2px solid var(--orange); box-shadow:2px 2px 0 #8B2500; padding:8px 16px; font-size:8px; color:var(--orange); white-space:nowrap; z-index:1000; transition:transform 0.15s steps(4); }
+.toast.show { transform:translateX(-50%) translateY(0); }
+
+/* NAV */
+.nav { width:100%; max-width:380px; display:grid; grid-template-columns:repeat(4,1fr); border-top:4px solid #222; margin-top:auto; background:var(--darker); }
+.nav-btn { padding:10px 4px; text-align:center; font-size:7px; color:#444; cursor:pointer; border:none; background:none; font-family:'Press Start 2P',monospace; }
+.nav-btn.on { color:var(--orange); }
+.nav-ic { font-size:16px; display:block; margin-bottom:4px; }
+
+/* FINGERPRINT */
+.fp-wrap { position:relative; width:60px; height:60px; margin:12px auto; }
+.fp-ring { position:absolute; inset:0; border:2px solid var(--orange); animation:fpscan 1.5s steps(8) infinite; opacity:0; }
+.fp-ring:nth-child(2){animation-delay:.3s;inset:8px;border-color:var(--ember)}
+.fp-ring:nth-child(3){animation-delay:.6s;inset:16px;border-color:var(--gold)}
+.fp-core { position:absolute; inset:24px; background:var(--orange); animation:blink 0.5s steps(2) infinite; }
+@keyframes fpscan { 0%{opacity:0;transform:scale(1.2)} 30%{opacity:1;transform:scale(1)} 70%{opacity:1} 100%{opacity:0;transform:scale(0.8)} }
+@keyframes activehammer { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-3px)} }
+
+/* FORGE SCENE */
+.forge-scene { position:relative; width:200px; margin:0 auto 8px; }
+.ember-layer { position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; overflow:visible; z-index:3; }
+.ember { position:absolute; width:4px; height:4px; background:var(--orange); animation:emberRise linear infinite; image-rendering:pixelated; }
+@keyframes emberRise {
+  0%   { transform:translateY(0) translateX(0); opacity:1; }
+  50%  { opacity:0.8; }
+  100% { transform:translateY(-80px) translateX(var(--drift)); opacity:0; }
+}
+.smoke-col { position:absolute; top:-8px; width:8px; background:#444; opacity:.6; border-radius:0; animation:smokeRise 2s steps(6) infinite; }
+@keyframes smokeRise {
+  0%   { height:4px; top:2px; opacity:.7; transform:scaleX(1); }
+  50%  { height:20px; top:-18px; opacity:.4; transform:scaleX(1.4); }
+  100% { height:30px; top:-28px; opacity:0; transform:scaleX(2); }
+}
+.fire-core { animation:firePulse .3s steps(2) infinite; }
+.fire-mid  { animation:firePulse .3s steps(2) infinite; animation-delay:.1s; }
+.fire-tip  { animation:firePulse .25s steps(2) infinite; animation-delay:.05s; }
+.glow-pulse{ animation:glowPulse 1s steps(2) infinite; }
+.coal1     { animation:coalGlow .6s steps(2) infinite; }
+.coal2     { animation:coalGlow .6s steps(2) infinite; animation-delay:.3s; }
+@keyframes firePulse { 0%,100%{opacity:1} 50%{opacity:.5} }
+@keyframes glowPulse { 0%,100%{opacity:.08} 50%{opacity:.18} }
+@keyframes coalGlow  { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+.w100 { width:100%; max-width:380px; }
+.center { text-align:center; }
+.row { display:flex; gap:8px; width:100%; }
+.col { display:flex; flex-direction:column; gap:12px; align-items:center; width:100%; }
+.label { font-size:9px; color:var(--ash); letter-spacing:1px; }
+.vt { font-family:'VT323',monospace; }
+</style>
+</head>
+<body>
+<div class="phone-frame">
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- ══════════════════════════════════
+  SPLASH
+══════════════════════════════════ -->
+<div class="screen active" id="screen-splash">
+  <div class="col" style="flex:1;justify-content:center;max-width:320px;">
+
+    <!-- PIXEL FORGE SCENE -->
+    <div style="position:relative;width:280px;margin:0 auto -8px;">
+      <canvas id="forgeCanvas" width="280" height="160"
+        style="display:block;image-rendering:pixelated;width:280px;height:160px;"></canvas>
+      <!-- Smoke canvas extends above, overlaid -->
+      <canvas id="smokeCanvas" width="280" height="500"
+        style="position:absolute;bottom:140px;left:0;image-rendering:pixelated;width:280px;height:500px;pointer-events:none;z-index:2;"></canvas>
+    </div>
+
+    <div class="logo">FORGE</div>
+    <div class="vt center" style="font-size:20px;color:var(--ash);margin:8px 0 24px;letter-spacing:2px;">SHOW UP. STRIKE. EARN.</div>
+    <div class="label center" style="margin-bottom:16px;">BUILT FOR SOLANA SEEKER</div>
+    <button class="btn" onclick="goTo('wallet')">► CONNECT SEED VAULT</button>
+    <div style="margin-top:12px;font-size:7px;color:#333;letter-spacing:.5px;">DEMO MODE — NO REAL FUNDS</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+  WALLET
+══════════════════════════════════ -->
+<div class="screen" id="screen-wallet">
+  <div class="col" style="max-width:340px;padding-top:20px;">
+    <div class="label">SEED VAULT WALLET</div>
+    <div class="pbox" style="background:var(--darker);padding:24px 20px;width:100%;text-align:center;">
+      <div style="font-size:10px;color:var(--white);margin-bottom:16px;line-height:1.8;">FORGE WANTS TO<br>ACCESS YOUR WALLET</div>
+      <div style="display:inline-flex;align-items:center;gap:6px;background:#111;border:2px solid #333;padding:6px 10px;margin-bottom:16px;">
+        <div style="width:8px;height:8px;background:var(--orange);animation:blink 1s steps(2) infinite;"></div>
+        <span style="font-size:7px;color:var(--ash);">SEED VAULT PROTECTED</span>
+      </div>
+      <div class="vt" style="font-size:18px;color:var(--ash);line-height:1.6;margin-bottom:20px;">
+        ✓ VIEW YOUR BALANCE<br>✓ RECEIVE TASK REWARDS<br>✗ CANNOT SPEND WITHOUT CONFIRM
+      </div>
+      <div class="fp-wrap">
+        <div class="fp-ring"></div><div class="fp-ring"></div><div class="fp-ring"></div>
+        <div class="fp-core"></div>
+      </div>
+      <div class="label" style="margin:8px 0 16px;">TOUCH SENSOR TO AUTHORIZE</div>
+      <button class="btn" onclick="connectWallet()">► AUTHORIZE</button>
+    </div>
+    <div style="font-size:7px;color:#333;letter-spacing:.5px;">SECURED BY SOLANA MOBILE STACK</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+  DASHBOARD
+══════════════════════════════════ -->
+<div class="screen" id="screen-dashboard">
+  <div style="width:100%;max-width:380px;display:flex;justify-content:space-between;align-items:center;padding:8px 0;">
+    <div style="font-size:16px;color:var(--orange);text-shadow:2px 2px 0 #8B2500;">FORGE</div>
+    <div class="vt" style="font-size:14px;color:var(--ash);">S1GGi...3F0RG</div>
+  </div>
+
+  <!-- FORGE METER -->
+  <div class="pbox w100" style="background:var(--darker);padding:20px 16px;">
+    <div class="label" style="margin-bottom:8px;">FORGE TEMPERATURE</div>
+    <div style="font-size:18px;color:var(--orange);text-shadow:2px 2px 0 #8B2500;margin-bottom:12px;">◈ HOT</div>
+    <div class="bar-bg"><div class="bar-fill" style="width:55%"></div></div>
+    <div style="display:flex;justify-content:space-between;margin-top:8px;">
+      <div style="font-size:10px;">STREAK: <span style="color:var(--orange);">5</span> DAYS</div>
+      <div style="font-size:10px;color:var(--gold);">×1.5 MULTIPLIER</div>
+    </div>
+    <div class="fire" style="margin-top:10px;">
+      <div class="fp" style="height:8px"></div>
+      <div class="fp" style="height:14px;background:var(--ember);animation-delay:.1s"></div>
+      <div class="fp" style="height:20px;animation-delay:.2s"></div>
+      <div class="fp" style="height:24px;background:var(--gold);animation-delay:.05s"></div>
+      <div class="fp" style="height:20px;animation-delay:.15s"></div>
+      <div class="fp" style="height:14px;animation-delay:.25s"></div>
+      <div class="fp" style="height:8px;animation-delay:.1s"></div>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><span class="stat-v">$4.82</span><span class="stat-l">TODAY EARNED</span></div>
+    <div class="stat"><span class="stat-v">$47.20</span><span class="stat-l">TOTAL EARNED</span></div>
+    <div class="stat"><span class="stat-v" style="color:var(--gold);">JRNY</span><span class="stat-l">CURRENT RANK</span></div>
+    <div class="stat"><span class="stat-v" style="font-size:10px;color:var(--ash);">✓ ACTIVE</span><span class="stat-l">GENESIS TOKEN</span></div>
+  </div>
+
+  <!-- SESSION CARD -->
+  <div class="w100 pbox" style="background:var(--darker);padding:16px;cursor:pointer;text-align:center;" onclick="startSession()">
+    <div class="label" style="margin-bottom:6px;">DAILY FORGE SESSION</div>
+    <div style="font-size:22px;color:var(--white);margin-bottom:4px;">10 TASKS READY</div>
+    <div style="font-size:8px;color:var(--orange);">EST. EARN TODAY: +$2.40–$4.80</div>
+    <div style="display:flex;gap:6px;justify-content:center;margin:12px 0;">
+      <div style="width:8px;height:8px;background:var(--orange);border:2px solid var(--ember);"></div>
+      <div style="width:8px;height:8px;background:var(--orange);border:2px solid var(--ember);"></div>
+      <div style="width:8px;height:8px;background:var(--orange);border:2px solid var(--ember);"></div>
+      <div style="width:8px;height:8px;background:var(--gold);border:2px solid var(--orange);animation:blink .5s steps(2) infinite;"></div>
+      <div style="width:8px;height:8px;background:#222;border:2px solid #333;"></div>
+      <div style="width:8px;height:8px;background:#222;border:2px solid #333;"></div>
+      <div style="width:8px;height:8px;background:#222;border:2px solid #333;"></div>
+      <div style="width:8px;height:8px;background:#222;border:2px solid #333;"></div>
+      <div style="width:8px;height:8px;background:#222;border:2px solid #333;"></div>
+      <div style="width:8px;height:8px;background:#222;border:2px solid #333;"></div>
+    </div>
+    <button class="btn" style="font-size:10px;padding:12px;">► START SESSION</button>
+  </div>
+
+  <div class="nav">
+    <button class="nav-btn on"><span class="nav-ic">⚒</span>FORGE</button>
+    <button class="nav-btn"><span class="nav-ic">◈</span>EARN</button>
+    <button class="nav-btn"><span class="nav-ic">◉</span>RANK</button>
+    <button class="nav-btn"><span class="nav-ic">▣</span>WALLET</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+  TASK
+══════════════════════════════════ -->
+<div class="screen" id="screen-task">
+  <div class="col" style="max-width:380px;gap:10px;flex:1;">
+    <div style="width:100%;display:flex;justify-content:space-between;align-items:center;">
+      <div id="t-num" class="label">TASK 1 / 10</div>
+      <div id="t-badge" style="font-size:8px;color:var(--black);background:var(--orange);padding:4px 8px;border-bottom:2px solid #8B2500;border-right:2px solid #8B2500;">+$0.32 EST</div>
+    </div>
+    <div style="width:100%;height:8px;background:#111;border:2px solid #222;">
+      <div id="t-prog" style="height:100%;width:0%;background:var(--orange);transition:width .3s steps(10);"></div>
+    </div>
+    <div class="pbox-dim" style="background:var(--darker);padding:20px 16px;width:100%;display:flex;flex-direction:column;gap:14px;flex:1;">
+      <div id="t-type" style="font-size:7px;color:var(--orange);border:2px solid var(--orange);padding:4px 8px;display:inline-block;letter-spacing:1px;">AI IMAGE CLASSIFICATION</div>
+      <div id="t-q" class="vt" style="font-size:22px;color:var(--white);line-height:1.4;">IS THIS IMAGE SAFE FOR ALL AUDIENCES?</div>
+      <div id="t-img" class="pix-img"></div>
+      <div style="font-size:8px;color:var(--ash);letter-spacing:.5px;">HUMAN VERIFIED • SOLANA SEEKER ONLY</div>
+      <div id="t-opts" class="options"></div>
+    </div>
+    <button id="t-sub" class="btn" style="opacity:.3;pointer-events:none;" onclick="submitTask()">SUBMIT ANSWER →</button>
+    <div style="font-size:7px;color:#333;letter-spacing:.5px;">SKIP COSTS 0.5 FORGE POINTS</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+  PAYOUT
+══════════════════════════════════ -->
+<div class="screen" id="screen-payout">
+  <div class="col" style="max-width:340px;justify-content:center;flex:1;gap:16px;padding-top:20px;" id="payout-inner">
+    <!-- filled by JS -->
+  </div>
+</div>
+
+<script>
+// ── DATA ──────────────────────────────────────────────
+const TASKS = [
+  { type:'AI IMAGE CLASSIFICATION', q:'IS THIS IMAGE SAFE FOR ALL AUDIENCES?',        opts:[['✓ YES','SAFE'],['✗ NO','UNSAFE']],                               earn:'$0.32', pal:'landscape' },
+  { type:'SENTIMENT ANALYSIS',       q:'HOW POSITIVE IS THIS PRODUCT REVIEW?',         opts:[['★ POSITIVE',''],['★ NEUTRAL',''],['✗ NEGATIVE',''],['? MIXED','']], earn:'$0.28', pal:'text'      },
+  { type:'AI RESPONSE RATING',       q:'DID THIS AI ANSWER CORRECTLY?',                opts:[['✓ CORRECT',''],['~ PARTIAL',''],['✗ WRONG',''],['⚠ FLAG','']],     earn:'$0.45', pal:'chat'      },
+  { type:'OBJECT DETECTION',         q:'HOW MANY PEOPLE ARE IN THIS IMAGE?',           opts:[['0',''],['1-2',''],['3-5',''],['6+','']],                           earn:'$0.38', pal:'crowd'     },
+  { type:'CONTENT MODERATION',       q:'DOES THIS TEXT CONTAIN HARMFUL CONTENT?',      opts:[['✓ CLEAN','SAFE'],['✗ HARMFUL','FLAG']],                           earn:'$0.35', pal:'text'      },
+  { type:'IMAGE QUALITY RATING',     q:'RATE THE QUALITY OF THIS PHOTO',              opts:[['★★★ HIGH',''],['★★ MED',''],['★ LOW',''],['✗ REJECT','']],          earn:'$0.30', pal:'crowd'     },
+  { type:'LANGUAGE DETECTION',       q:'WHAT LANGUAGE IS THIS TEXT WRITTEN IN?',      opts:[['ENGLISH',''],['SPANISH',''],['FRENCH',''],['OTHER','']],           earn:'$0.22', pal:'text'      },
+  { type:'RELEVANCE CHECK',          q:'IS THIS AD RELEVANT TO THE ARTICLE?',         opts:[['✓ YES','RELEVANT'],['✗ NO','MISMATCH']],                          earn:'$0.40', pal:'chat'      },
+  { type:'EMOTION DETECTION',        q:'WHAT EMOTION DOES THIS FACE SHOW?',           opts:[['😊 HAPPY',''],['😢 SAD',''],['😠 ANGRY',''],['😐 NEUTRAL','']],    earn:'$0.36', pal:'crowd'     },
+  { type:'AUDIO TRANSCRIPTION',      q:'IS THIS TRANSCRIPTION ACCURATE?',             opts:[['✓ CORRECT',''],['~ MOSTLY',''],['✗ WRONG','']],                   earn:'$0.50', pal:'landscape' },
+];
+
+const PALETTES = {
+  landscape:['#1a3a1a','#2d6a2d','#4a9a4a','#87c887','#1a5a8a','#2a7ab8','#4aa8e8','#87d4f8','#8B6914','#C4943A'],
+  text:     ['#111','#222','#1a1a2e','#333','#555','#444','#FF6B2B','#333','#222','#111'],
+  chat:     ['#0d1b2a','#1b2838','#2a3f5f','#FF6B2B','#333','#1a1a1a','#2d2d2d','#444','#555','#FF8C42'],
+  crowd:    ['#2d1b0e','#5c3d1e','#8B6333','#c49a6c','#1a1a3a','#2a2a5a','#4a4a8a','#6a6aaa','#222','#333'],
+};
+
+let taskIdx = 0;
+let chosen = null;
+
+// ── NAV ───────────────────────────────────────────────
+function goTo(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + id).classList.add('active');
+}
+
+// ── TOAST ─────────────────────────────────────────────
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2000);
+}
+
+// ── WALLET ────────────────────────────────────────────
+function connectWallet() {
+  toast('✓ SEED VAULT AUTHORIZED');
+  setTimeout(() => goTo('dashboard'), 900);
+}
+
+// ── SESSION ───────────────────────────────────────────
+function startSession() {
+  taskIdx = 0;
+  renderTask();
+}
+
+// ── RENDER TASK ───────────────────────────────────────
+function renderTask() {
+  if (taskIdx >= TASKS.length) { renderComplete(); return; }
+
+  goTo('task');
+
+  const t = TASKS[taskIdx];
+  chosen = null;
+
+  document.getElementById('t-num').textContent   = 'TASK ' + (taskIdx + 1) + ' / ' + TASKS.length;
+  document.getElementById('t-badge').textContent = '+' + t.earn + ' EST';
+  document.getElementById('t-type').textContent  = t.type;
+  document.getElementById('t-q').textContent     = t.q;
+  document.getElementById('t-prog').style.width  = (taskIdx / TASKS.length * 100) + '%';
+
+  // Pixel art
+  const imgEl = document.getElementById('t-img');
+  imgEl.innerHTML = '';
+  const pal = PALETTES[t.pal];
+  for (let r = 0; r < 10; r++) {
+    for (let c = 0; c < 16; c++) {
+      const px = document.createElement('div');
+      const n = Math.sin(r * 2.7 + c * 1.3 + taskIdx * 0.9) * 0.5 + 0.5;
+      px.style.cssText = 'width:100%;height:100%;background:' + pal[Math.min(Math.floor(n * n * pal.length), pal.length - 1)];
+      imgEl.appendChild(px);
+    }
+  }
+
+  // Options
+  const optsEl = document.getElementById('t-opts');
+  optsEl.innerHTML = '';
+  optsEl.style.gridTemplateColumns = t.opts.length > 2 ? '1fr 1fr' : '1fr 1fr';
+  t.opts.forEach(([label, sub]) => {
+    const b = document.createElement('button');
+    b.className = 'opt';
+    b.innerHTML = label + (sub ? '<br><span style="font-size:7px;color:#555;">' + sub + '</span>' : '');
+    b.addEventListener('click', () => pickOption(b, label));
+    optsEl.appendChild(b);
+  });
+
+  // Reset submit
+  const sub = document.getElementById('t-sub');
+  sub.style.opacity = '0.3';
+  sub.style.pointerEvents = 'none';
+}
+
+// ── PICK OPTION ───────────────────────────────────────
+function pickOption(el, val) {
+  document.querySelectorAll('#t-opts .opt').forEach(b => b.classList.remove('chosen'));
+  el.classList.add('chosen');
+  chosen = val;
+  const sub = document.getElementById('t-sub');
+  sub.style.opacity = '1';
+  sub.style.pointerEvents = 'auto';
+}
+
+// ── SUBMIT ────────────────────────────────────────────
+function submitTask() {
+  if (!chosen) return;
+  const t = TASKS[taskIdx];
+  taskIdx++;
+
+  const chars = '0123456789ABCDEFabcdef';
+  const hash = Array.from({length:8}, () => chars[Math.floor(Math.random()*chars.length)]).join('');
+
+  const inner = document.getElementById('payout-inner');
+  inner.innerHTML =
+    '<div class="label">TRANSACTION CONFIRMED</div>' +
+    '<div style="font-size:clamp(14px,4vw,20px);color:var(--gold);text-shadow:2px 2px 0 #8B2500;text-align:center;">TASK COMPLETE!</div>' +
+    '<div class="coins">' + Array.from({length:10},(_,i)=>'<div class="coin" style="animation-delay:'+i*0.05+'s"></div>').join('') + '</div>' +
+    '<div style="font-size:clamp(28px,10vw,52px);color:var(--orange);text-shadow:4px 4px 0 #8B2500;text-align:center;">' + t.earn + '</div>' +
+    '<div class="vt" style="font-size:18px;color:var(--ash);">SENT TO YOUR SEED VAULT</div>' +
+    '<div style="font-size:7px;color:#444;border:2px solid #222;padding:8px;width:100%;max-width:320px;font-family:VT323,monospace;">' +
+      'TX: ' + hash.slice(0,4) + '...' + hash.slice(-4) + '<br><span style="color:#333;">CONFIRMED ON SOLANA</span>' +
+    '</div>' +
+    '<div class="streak-badge">' +
+      '<div class="label" style="margin-bottom:10px;">SESSION PROGRESS</div>' +
+      hammerProgress(taskIdx, TASKS.length) +
+      '<div style="font-size:8px;color:var(--orange);margin-top:10px;">1.5× MULTIPLIER ACTIVE</div>' +
+    '</div>' +
+    '<div class="row">' +
+      '<button class="btn dim sm half" onclick="goTo(\'dashboard\')">← HOME</button>' +
+      '<button class="btn sm half" onclick="renderTask()">NEXT ►</button>' +
+    '</div>';
+
+  goTo('payout');
+}
+
+// ── SESSION COMPLETE ──────────────────────────────────
+function renderComplete() {
+  const inner = document.getElementById('payout-inner');
+  inner.innerHTML =
+    '<div class="label">SESSION COMPLETE</div>' +
+    '<div style="font-size:clamp(14px,4vw,20px);color:var(--gold);text-shadow:2px 2px 0 #8B2500;text-align:center;">FORGE BLAZING! 🔥</div>' +
+    '<div class="coins">' + Array.from({length:10},(_,i)=>'<div class="coin" style="animation-delay:'+i*0.05+'s"></div>').join('') + '</div>' +
+    '<div class="label">TODAY YOU EARNED</div>' +
+    '<div style="font-size:clamp(28px,10vw,52px);color:var(--orange);text-shadow:4px 4px 0 #8B2500;">+$3.20</div>' +
+    '<div class="vt" style="font-size:18px;color:var(--ash);">SENT TO YOUR SEED VAULT</div>' +
+    '<div style="font-size:7px;color:#444;border:2px solid #222;padding:8px;width:100%;max-width:320px;font-family:VT323,monospace;">' +
+      'ALL 10 TASKS VERIFIED<br><span style="color:#333;">REWARDS CONFIRMED ON SOLANA</span>' +
+    '</div>' +
+    '<div class="streak-badge">' +
+      '<div class="label" style="margin-bottom:8px;">STREAK EXTENDED!</div>' +
+      hammerProgress(10, 10) +
+      '<div style="font-size:28px;color:var(--gold);text-shadow:2px 2px 0 #8B6914;margin-top:8px;">DAY 6 🔥</div>' +
+      '<div style="font-size:8px;color:var(--orange);margin-top:4px;">STREAK +1 — KEEP IT ALIVE!</div>' +
+    '</div>' +
+    '<div style="font-size:8px;color:var(--ash);text-align:center;line-height:1.8;">WANT TO KEEP EARNING?<br>BONUS TASKS ARE AVAILABLE.</div>' +
+    '<div class="row">' +
+      '<button class="btn dim sm half" onclick="goTo(\'dashboard\')">← GO HOME</button>' +
+      '<button class="btn sm half" onclick="startBonus()">KEEP GOING ►</button>' +
+    '</div>';
+
+  goTo('payout');
+}
+
+// ── FORGE CANVAS RENDERER ─────────────────────────────
+(function initForge() {
+  const canvas = document.getElementById('forgeCanvas');
+  const smokeCanvas = document.getElementById('smokeCanvas');
+  if (!canvas || !smokeCanvas) return;
+  const ctx = canvas.getContext('2d');
+  const sCtx = smokeCanvas.getContext('2d');
+
+  const S = 4; // each game pixel = 4x4 real px
+  const W = 70, H = 55; // game grid size
+
+  function px(x, y, color, w=1, h=1) {
+    ctx.fillStyle = color;
+    ctx.fillRect(x*S, y*S, w*S, h*S);
+  }
+
+  // ── FIRE SIMULATION ──
+  const FW = 18, FH = 14;
+  const fire = new Float32Array(FW * FH);
+  const fireNext = new Float32Array(FW * FH);
+  function stepFire() {
+    for (let x=0; x<FW; x++) {
+      fire[(FH-1)*FW+x] = 0.85 + Math.random()*0.15;
+      if (x>2 && x<FW-3) fire[(FH-2)*FW+x] = 0.6 + Math.random()*0.4;
+    }
+    for (let y=0; y<FH-1; y++) {
+      for (let x=0; x<FW; x++) {
+        const l  = fire[y*FW+Math.max(0,x-1)];
+        const r  = fire[y*FW+Math.min(FW-1,x+1)];
+        const d  = fire[(y+1)*FW+x];
+        const d2 = y+2<FH ? fire[(y+2)*FW+x] : d;
+        fireNext[y*FW+x] = Math.max(0,(l+r+d+d2)/4-(0.038+Math.random()*0.04));
+      }
+    }
+    for (let i=0; i<FW*(FH-1); i++) fire[i]=fireNext[i];
+  }
+  function fireColor(v) {
+    if (v<=0)   return null;
+    if (v>0.92) return '#FFFFFF';
+    if (v>0.78) return '#FFF0A0';
+    if (v>0.63) return '#FFD700';
+    if (v>0.48) return '#FF8C00';
+    if (v>0.33) return '#FF4500';
+    if (v>0.18) return '#CC2200';
+    return '#660800';
+  }
+
+  // ── SMOKE — on separate tall canvas so it rises up through screen ──
+  const smokes = [];
+  // smokeCanvas is 500px tall, positioned so bottom=180px from forge canvas bottom
+  // chimney top is at roughly y=1 in game grid = 4px from top of forge canvas
+  // in smokeCanvas coords, that's near the very bottom (500 - 180 + 4 = ~324px from smokeCanvas top... 
+  // easier: spawn at smokeCanvas bottom and rise upward)
+  const SMOKE_START_Y = 490; // near bottom of smokeCanvas (just above chimney exit)
+  const SMOKE_START_X = 140; // center of chimney (x=35 game px * 4 = 140)
+
+  function spawnSmoke() {
+    smokes.push({
+      x: SMOKE_START_X + (Math.random()-0.5)*12,
+      y: SMOKE_START_Y,
+      vx: (Math.random()-0.5)*0.6,
+      vy: -(1.2 + Math.random()*0.8),
+      life: 1.0,
+      decay: 0.0022 + Math.random()*0.001,
+      r: 6 + Math.random()*4,
+    });
+  }
+
+  // ── EMBERS — spawn inside arch, fly outward ──
+  const embers = [];
+  function spawnEmber() {
+    // arch center is around x=35, y=24 in game coords
+    embers.push({
+      x: 27 + Math.random()*16,
+      y: 18 + Math.random()*10,
+      vx: (Math.random()-0.5)*0.7,
+      vy: -(0.15 + Math.random()*0.5),
+      life: 1.0,
+      decay: 0.009 + Math.random()*0.008,
+      size: Math.random()>0.5 ? 2 : 1,
+      color: ['#FF6B2B','#FFD700','#FF3D00','#FF8C00'][Math.floor(Math.random()*4)],
+    });
+  }
+
+  // Stone helpers
+  const SA=['#5a5a5a','#525252','#606060','#484848','#585858'];
+  const SB=['#484848','#404040','#505050','#383838','#464646'];
+  const SH=['#707070','#686868','#787878'];
+  function sc(c,r,d=false){return(d?SB:SA)[(c*7+r*13)%5];}
+
+  // ── DRAW STATIC FORGE ──
+  function drawStatic() {
+    ctx.clearRect(0,0,280,160);
+    ctx.fillStyle='#0D0D0D';
+    ctx.fillRect(0,0,280,160);
+
+    const BW=5, BH=4;
+
+    // CHIMNEY — small, centered at x=33..39
+    const CX=33, CW2=7;
+    // cap
+    px(CX-1,0,'#555',CW2+2,1);
+    px(CX-1,0,'#777',CW2+2,1); // highlight top
+    // shaft — 6 rows tall
+    for(let r=1;r<7;r++){
+      px(CX,  r, sc(0,r,true), 1, 1);
+      px(CX+1,r, sc(1,r),      2, 1);
+      px(CX+3,r, sc(2,r),      2, 1);
+      px(CX+5,r, sc(3,r,true), 1, 1);
+      // mortar every 2 rows
+      if(r%2===0){ctx.fillStyle='#222';ctx.fillRect(CX*S,r*S,CW2*S,1);}
+    }
+    // inner dark
+    ctx.fillStyle='#0a0500';
+    ctx.fillRect((CX+1)*S,S,(CW2-2)*S,5*S);
+    // warm glow tinge at base
+    ctx.fillStyle='rgba(255,80,0,0.12)';
+    ctx.fillRect((CX+1)*S,4*S,(CW2-2)*S,3*S);
+
+    // STONE WALL — 5 brick rows, y=7..26
+    for(let row=0;row<5;row++){
+      const by=7+row*BH;
+      const off=(row%2)?2:0;
+      for(let b=0;b<16;b++){
+        const bx=b*BW+off;
+        if(bx+BW<0||bx>W) continue;
+        // skip arch gap rows 1-4
+        if(row>=1 && bx+BW>22 && bx<48) continue;
+        // skip chimney gap row 0
+        if(row===0 && bx+BW>CX-1 && bx<CX+CW2+1) continue;
+        px(bx,by,sc(b,row),BW,BH);
+        px(bx,by,SH[b%3],BW,1);
+        px(bx+BW-1,by,'#2a2a2a',1,BH);
+        px(bx,by+BH-1,'#2a2a2a',BW,1);
+      }
+      ctx.fillStyle='#222';ctx.fillRect(0,by*S,280,1);
+    }
+
+    // ARCH FRAME — x:22..48, y:11..30
+    px(21,10,'#2a2a2a',28,2); px(21,10,'#505050',28,1); // lintel
+    px(21,12,'#3a3a3a',2,19); px(22,12,'#4a4a4a',1,19); // left pillar
+    px(47,12,'#3a3a3a',2,19); px(47,12,'#282828',1,19); // right pillar
+    px(21,30,'#2a2a2a',28,2); px(21,30,'#555',28,1);    // sill
+    // arch interior
+    ctx.fillStyle='#090300';ctx.fillRect(23*S,12*S,24*S,18*S);
+    // corner stones
+    px(22,10,'#666',1,1);px(47,10,'#666',1,1);
+    px(22,30,'#666',1,1);px(47,30,'#666',1,1);
+
+    // LEDGE
+    px(1,32,'#686868',W-2,1);
+    px(1,33,'#505050',W-2,2);
+    px(1,35,'#303030',W-2,1);
+
+    // COAL BED
+    for(let cx=3;cx<W-3;cx+=2){
+      const cy=36+(cx%3);
+      px(cx,cy,'#1a1a1a',2,2);px(cx,cy,'#252525',1,1);
+    }
+
+    // TOOLS LEFT — tongs
+    px(1,12,'#888',1,1);px(1,13,'#777',1,14);px(2,13,'#999',1,1);px(2,14,'#888',1,12);
+    px(1,27,'#666',1,5);px(2,26,'#777',1,4);px(3,25,'#888',2,1);px(3,30,'#555',2,1);
+    px(2,22,'#aaa',1,1);
+
+    // TOOLS RIGHT — poker
+    px(66,10,'#888',1,1);px(66,11,'#777',1,15);px(67,11,'#999',1,1);px(67,12,'#888',1,13);
+    px(64,26,'#666',1,5);px(65,25,'#777',1,4);px(67,25,'#777',1,4);px(68,26,'#666',1,5);
+    px(64,31,'#FF4500',1,1);px(68,31,'#FF3D00',1,1);
+
+    // FLOOR — subtle shadow only inside canvas bounds
+    ctx.fillStyle='rgba(0,0,0,0.35)';ctx.fillRect(0,37*S,280,4);
+  }
+
+  // ── DRAW DYNAMIC ──
+  function drawDynamic(t) {
+    // arch glow
+    const fl=0.9+Math.sin(t*0.35)*0.07+Math.random()*0.05;
+    ctx.fillStyle=`rgba(255,100,20,${(0.14+Math.sin(t*0.2)*0.05)*fl})`;
+    ctx.fillRect(23*S,12*S,24*S,18*S);
+
+    // fire sim
+    for(let fy=0;fy<FH;fy++)
+      for(let fx=0;fx<FW;fx++){
+        const c=fireColor(fire[fy*FW+fx]);
+        if(c) px(25+fx,13+fy,c);
+      }
+
+    // coal glow
+    for(let cx=5;cx<W-5;cx+=4){
+      const cy=36+(cx%3);
+      const g=0.4+Math.sin(t*0.13+cx)*0.4+Math.random()*0.1;
+      px(cx,cy,g>0.6?'#FF4500':g>0.35?'#CC2200':'#880800',2,1);
+    }
+
+    // embers on forge canvas
+    for(const e of embers){
+      ctx.globalAlpha=e.life*0.9;
+      ctx.fillStyle=e.color;
+      ctx.fillRect(e.x*S,e.y*S,e.size*S,e.size*S);
+      if(e.life>0.5){
+        ctx.globalAlpha=(e.life-0.5)*0.3;
+        ctx.fillRect((e.x-e.vx*3)*S,(e.y-e.vy*3)*S,e.size*S,e.size*S);
+      }
+      ctx.globalAlpha=1;
+    }
+
+    // ── SMOKE on separate canvas ──
+    sCtx.clearRect(0,0,280,500);
+    for(const s of smokes){
+      const risen = (SMOKE_START_Y - s.y) / SMOKE_START_Y; // 0=just spawned, 1=top
+      const r = s.r + risen * 55; // balloon big as rises
+      const alpha = s.life * (0.55 - risen*0.35);
+      if(alpha<=0.01) continue;
+      const shade = Math.floor(55 + risen*35);
+      sCtx.fillStyle = `rgba(${shade},${shade-4},${shade-8},${alpha})`;
+      // pixelated block (snap to 4px grid for pixel art feel)
+      const bsz = Math.max(4, Math.round(r/4)*4);
+      sCtx.fillRect(Math.round(s.x/4)*4 - bsz/2, Math.round(s.y/4)*4 - bsz/2, bsz, bsz);
+    }
+    // fade top of smoke canvas to black
+    const fadeH = 200;
+    const grad = sCtx.createLinearGradient(0,0,0,fadeH);
+    grad.addColorStop(0,'rgba(13,13,13,1)');
+    grad.addColorStop(0.5,'rgba(13,13,13,0.5)');
+    grad.addColorStop(1,'rgba(13,13,13,0)');
+    sCtx.fillStyle=grad;
+    sCtx.fillRect(0,0,280,fadeH);
+  }
+
+  // ── TICK ──
+  let t=0, sT=0, eT=0;
+  function tick(){
+    t++; stepFire();
+
+    sT++;
+    if(sT>5){spawnSmoke();sT=0;}
+    for(let i=smokes.length-1;i>=0;i--){
+      const s=smokes[i];
+      s.x+=s.vx; s.y+=s.vy;
+      s.vx+=(Math.random()-0.5)*0.18; // turbulence widens as rises
+      s.life-=s.decay;
+      if(s.y<-60||s.life<=0) smokes.splice(i,1);
+    }
+
+    eT++;
+    if(eT>2){spawnEmber();eT=0;}
+    for(let i=embers.length-1;i>=0;i--){
+      const e=embers[i];
+      e.x+=e.vx; e.y+=e.vy;
+      e.vx+=(Math.random()-0.5)*0.08;
+      e.vy+=0.015; // gravity
+      e.life-=e.decay;
+      if(e.life<=0||e.x<0||e.x>W||e.y<0||e.y>H) embers.splice(i,1);
+    }
+
+    drawStatic(); drawDynamic(t);
+    requestAnimationFrame(tick);
+  }
+  tick();
+})();
+
+// ── BONUS ROUND ───────────────────────────────────────
+function startBonus() {
+  taskIdx = 0;
+  toast('🔥 BONUS ROUND — KEEP EARNING!');
+  setTimeout(() => renderTask(), 600);
+}
+
+// ── HAMMER PROGRESS ───────────────────────────────────
+function pixelHammer(done) {
+  const o  = '#000000';
+  const hf = done ? '#BBBBBB' : '#3a3a3a';  // head face
+  const hh = done ? '#E8E8E8' : '#555555';  // head highlight
+  const hs = done ? '#777777' : '#222222';  // head shadow
+  const hd = done ? '#444444' : '#111111';  // head deep shadow / side
+  const w1 = done ? '#8B4513' : '#1a0e05';  // wood main
+  const w2 = done ? '#5C2E0A' : '#0d0700';  // wood dark side
+  const wh = done ? '#B8621A' : '#221208';  // wood highlight
+
+  // 10 wide x 14 tall
+  // Head: full width rectangle rows 0-5
+  // Handle: 2px wide, center (x4-5), rows 5-13
+  return '<svg width="24" height="32" viewBox="0 0 10 14" xmlns="http://www.w3.org/2000/svg" style="image-rendering:pixelated;display:block;">' +
+
+    // ── OUTLINE HEAD ──
+    '<rect x="0" y="0" width="10" height="6" fill="' + o + '"/>' +
+
+    // ── HEAD FACE (inset 1px from outline) ──
+    '<rect x="1" y="1" width="8"  height="4" fill="' + hf + '"/>' +
+    // top highlight
+    '<rect x="1" y="1" width="8"  height="1" fill="' + hh + '"/>' +
+    // left highlight
+    '<rect x="1" y="1" width="1"  height="4" fill="' + hh + '"/>' +
+    // top-left bright
+    '<rect x="1" y="1" width="3"  height="2" fill="' + hh + '"/>' +
+    // bottom shadow
+    '<rect x="1" y="4" width="8"  height="1" fill="' + hs + '"/>' +
+    // right shadow
+    '<rect x="8" y="1" width="1"  height="4" fill="' + hs + '"/>' +
+    // bottom-right dark corner
+    '<rect x="7" y="4" width="2"  height="1" fill="' + hd + '"/>' +
+
+    // ── HEAD BOTTOM DEPTH (makes it look thick) ──
+    '<rect x="1" y="5" width="8"  height="1" fill="' + hd + '"/>' +
+
+    // ── HANDLE OUTLINE ──
+    '<rect x="3" y="5" width="4"  height="9" fill="' + o + '"/>' +
+
+    // ── HANDLE WOOD ──
+    '<rect x="4" y="6" width="2"  height="7" fill="' + w1 + '"/>' +
+    // left highlight strip
+    '<rect x="4" y="6" width="1"  height="7" fill="' + wh + '"/>' +
+    // right shadow strip
+    '<rect x="5" y="6" width="1"  height="7" fill="' + w2 + '"/>' +
+    // grip band 1
+    '<rect x="4" y="8" width="2"  height="1" fill="' + w2 + '"/>' +
+    // grip band 2
+    '<rect x="4" y="11" width="2" height="1" fill="' + w2 + '"/>' +
+
+  '</svg>';
+}
+
+function hammerProgress(done, total) {
+  let html = '<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:5px;width:100%;">';
+  for (let i = 0; i < total; i++) {
+    const isDone = i < done;
+    const isActive = i === done - 1;
+    const wrapper = isActive
+      ? 'background:#1A0800;border:2px solid var(--orange);padding:3px;box-shadow:0 0 6px rgba(255,107,43,0.6);animation:activehammer 0.4s steps(2) 3;display:flex;justify-content:center;'
+      : isDone
+        ? 'background:#1A0800;border:2px solid #8B2500;padding:3px;display:flex;justify-content:center;'
+        : 'background:#0D0D0D;border:2px solid #222;padding:3px;display:flex;justify-content:center;';
+    html += '<div style="' + wrapper + '">' + pixelHammer(isDone) + '</div>';
+  }
+  html += '</div>';
+  html += '<div style="font-size:9px;color:var(--white);margin-top:8px;text-align:center;">' + done + ' / ' + total + ' FORGED</div>';
+  return html;
+}
+</script>
+</body>
+</html>
